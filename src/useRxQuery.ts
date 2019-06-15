@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { RxCollection, RxQuery, RxDocument } from "rxdb";
-import { useRxDB } from "./RxDBContext";
-import { Subscription } from "rxjs";
+import { useEffect, useState } from 'react';
+import { RxCollection, RxDocument, RxQuery } from 'rxdb';
+import { Subscription } from 'rxjs';
+import { useRxDB } from './RxDBContext';
 
 export interface RxQueryHookOptions<
   Collections = { [key: string]: RxCollection },
@@ -11,11 +11,11 @@ export interface RxQueryHookOptions<
   collectionSelector: keyof Collections;
   query: (
     collection: RxCollection
-  ) => RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods>[]>;
+  ) => RxQuery<RxDocumentType, Array<RxDocument<RxDocumentType, OrmMethods>>>;
 }
 
 export interface RxQueryHookResult<RxDocumentType = any, OrmMethods = {}> {
-  documents?: RxDocument<RxDocumentType, OrmMethods>[] | null;
+  documents?: Array<RxDocument<RxDocumentType, OrmMethods>> | null;
   loading: boolean;
   error?: Error;
 }
@@ -28,7 +28,7 @@ export function useRxQuery<
   OrmMethods = {}
 >({
   collectionSelector,
-  query
+  query,
 }: RxQueryHookOptions<
   Collections,
   RxDocumentType,

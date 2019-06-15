@@ -1,5 +1,5 @@
-import { RxCollection, RxDatabase } from "rxdb";
-import React, { ReactNode, ReactElement, useContext, useState } from "react";
+import React, { ReactElement, ReactNode, useContext, useState } from 'react';
+import { RxCollection, RxDatabase } from 'rxdb';
 
 const RxDBContext = React.createContext<null | RxDatabase<any>>(null);
 
@@ -15,7 +15,7 @@ export interface RxDBProviderWithPromiseProps<Collections> {
 
 export function RxDBProvider<Collections = { [key: string]: RxCollection }>({
   dbPromise,
-  children
+  children,
 }: RxDBProviderWithPromiseProps<Collections>): ReactElement<
   RxDBProviderProps<Collections>
 > {
