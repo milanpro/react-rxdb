@@ -37,18 +37,17 @@ export function useRxQuery<
   const db = useRxDB<Collections>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | undefined>();
-  const [sub, setSub] = useState<Subscription | undefined>();
   const [result, setResult] = useState<Array<
     RxDocument<RxDocumentType, OrmMethods>
   > | null>(null);
   React.useEffect(() => {
+    const subs: Subscription[] = [];
     // ComponentDidMount
     try {
       if (db && !error && loading) {
-        const collection: RxCollection<RxDocumentType, OrmMethods> = db[
+        let collection: RxCollection<RxDocumentType, OrmMethods> = db[
           collectionSelector
         ] as any;
-        const rxQuery = query(collection);
         const updateFN = (
           results: Array<RxDocument<RxDocumentType, OrmMethods>>
         ) => {
@@ -57,16 +56,34 @@ export function useRxQuery<
             setLoading(false);
           }
         };
-        rxQuery.exec().then(updateFN);
-        setSub(rxQuery.$.subscribe(updateFN));
+        if (!collection) {
+          subs.push(
+            db.$.subscribe(event => {
+              if (event.data.op === 'RxDatabase.collection') {
+                collection = db[collectionSelector] as any;
+                if (collection) {
+                  const rxQuery = query(collection);
+                  rxQuery.exec().then(updateFN);
+                  subs.push(rxQuery.$.subscribe(updateFN));
+                }
+              }
+            })
+          );
+        } else {
+          const rxQuery = query(collection);
+          rxQuery.exec().then(updateFN);
+          subs.push(rxQuery.$.subscribe(updateFN));
+        }
       }
     } catch (error) {
       setError(error);
     }
     // ComponentWillUnmount
     return () => {
-      if (sub) {
-        sub.unsubscribe();
+      if (subs.length !== 0) {
+        for (const sub of subs) {
+          sub.unsubscribe();
+        }
       }
     };
   }, [db]);
