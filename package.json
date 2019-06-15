@@ -1,0 +1,22 @@
+{
+  "name": "react-rxdb",
+  "version": "0.0.1",
+  "main": "index.js",
+  "repository": "git@github.com:milanpro/react-rxdb.git",
+  "author": "Milan Proell <milan.proell@googlemail.com>",
+  "license": "MIT",
+  "peerDependencies": {
+    "rxdb": "^8.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^16.8.20",
+    "@types/react-dom": "^16.8.4",
+    "prettier": "^1.18.2",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "rxdb": "^8.2.0",
+    "tslint": "^5.17.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.5.2"
+  }
+}
