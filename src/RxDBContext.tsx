@@ -1,4 +1,10 @@
-import React, { ReactElement, ReactNode, useContext, useState } from 'react';
+import React, {
+  ReactElement,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { RxCollection, RxDatabase } from 'rxdb';
 
 const RxDBContext = React.createContext<null | RxDatabase<any>>(null);
@@ -20,8 +26,9 @@ export function RxDBProvider<Collections = { [key: string]: RxCollection }>({
   RxDBProviderProps<Collections>
 > {
   const [db, setDb] = useState<RxDatabase<Collections> | null>(null);
-  // TODO: UseEffect for handling of rxdb value changes
-  dbPromise.then(resolvedDb => setDb(resolvedDb));
+  useEffect(() => {
+    dbPromise.then(resolvedDb => setDb(resolvedDb));
+  }, []);
   return <RxDBContext.Provider value={db}>{children}</RxDBContext.Provider>;
 }
 

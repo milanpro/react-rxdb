@@ -1,10 +1,16 @@
 {
   "name": "react-rxdb",
   "version": "0.0.1",
-  "main": "index.js",
   "repository": "git@github.com:milanpro/react-rxdb.git",
   "author": "Milan Proell <milan.proell@googlemail.com>",
   "license": "MIT",
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "es",
+    "lib"
+  ],
   "scripts": {
     "build:cjs": "rimraf lib && babel src --extensions '.ts' --extensions '.tsx' --ignore '**/__tests__' --ignore '**/__testutils__' -d lib",
     "build:es": "rimraf es && cross-env ES_MODULES=true babel src --extensions '.ts' --extensions '.tsx' --ignore '**/__tests__' --ignore '**/__testutils__' -d es",

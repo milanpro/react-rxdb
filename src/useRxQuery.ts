@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { RxCollection, RxDocument, RxQuery } from 'rxdb';
 import { Subscription } from 'rxjs';
 import { useRxDB } from './RxDBContext';
@@ -41,21 +41,24 @@ export function useRxQuery<
   const [result, setResult] = useState<Array<
     RxDocument<RxDocumentType, OrmMethods>
   > | null>(null);
-  useEffect(() => {
+  React.useEffect(() => {
     // ComponentDidMount
     try {
       if (db && !error && loading) {
         const collection: RxCollection<RxDocumentType, OrmMethods> = db[
           collectionSelector
         ] as any;
-        setSub(
-          query(collection).$.subscribe(results => {
-            setResult(results);
-            if (loading) {
-              setLoading(false);
-            }
-          })
-        );
+        const rxQuery = query(collection);
+        const updateFN = (
+          results: Array<RxDocument<RxDocumentType, OrmMethods>>
+        ) => {
+          setResult(results);
+          if (loading) {
+            setLoading(false);
+          }
+        };
+        rxQuery.exec().then(updateFN);
+        setSub(rxQuery.$.subscribe(updateFN));
       }
     } catch (error) {
       setError(error);
