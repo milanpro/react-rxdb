@@ -27,19 +27,12 @@ export function RxDBProvider<Collections = { [key: string]: RxCollection }>({
 
 export function useRxDB<Collections = { [key: string]: RxCollection }>(
   overrideDb?: RxDatabase<Collections>
-): RxDatabase<Collections> {
-  const db: RxDatabase<Collections> = useContext(RxDBContext);
+): null | RxDatabase<Collections> {
+  const db = useContext<null | RxDatabase<Collections>>(RxDBContext);
 
   if (overrideDb) {
     return overrideDb;
   }
 
-  if (!db) {
-    throw new Error(
-      'Could not find "db" in the context or passed in as a prop. ' +
-        "Wrap the root component in an <RxDBProvider>, or pass an " +
-        "RxDatabase instance in via props."
-    );
-  }
   return db;
 }
