@@ -69,6 +69,6 @@ export function useRxQuery<
         sub.unsubscribe();
       }
     };
-  }, []);
+  }, [db]);
   return { documents: result, loading: loading && !error, error };
 }
