@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { RxCollection, RxDocument, RxQuery } from 'rxdb';
-import { Subscription } from 'rxjs';
 import { useCollection } from './useCollection';
 
 type OverloadRxQuery<RxDocumentType, OrmMethods> = RxQuery<
