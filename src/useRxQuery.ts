@@ -3,12 +3,10 @@ import { RxCollection, RxCollectionBase, RxDocument, RxQuery } from 'rxdb';
 import { useCollection } from './useCollection';
 
 type findResult<R, M> = Array<RxDocument<R, M>>;
-type findOneResult<R, M> = RxDocument<R, M> | null;
 
 type OverloadRxQuery<RxDocumentType, OrmMethods> = RxQuery<
   RxDocumentType,
-  | findResult<RxDocumentType, OrmMethods>
-  | findOneResult<RxDocumentType, OrmMethods>
+  findResult<RxDocumentType, OrmMethods>
 >;
 
 type queryFN<
@@ -20,11 +18,11 @@ type queryFN<
   ? OverloadRxQuery<T, M>
   : OverloadRxQuery<any, {}>;
 
-interface RxQueryHookResult<query extends (...args: any) => any> {
-  documents?: ReturnType<query> | null;
-  loading: boolean;
-  error?: Error;
-}
+type execResult<query extends (...args: any) => any> = ReturnType<
+  query
+> extends RxQuery<infer _R, infer T>
+  ? T
+  : never;
 
 export function useRxQuery<
   Collections = {
@@ -33,15 +31,15 @@ export function useRxQuery<
 >(
   collectionSelector: keyof Collections,
   query: queryFN<Collections, typeof collectionSelector>
-): RxQueryHookResult<typeof query> {
+) {
   const collection = useCollection<Collections>(collectionSelector);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | undefined>();
-  const [result, setResult] = useState<ReturnType<typeof query> | null>(null);
+  const [result, setResult] = useState<execResult<typeof query> | null>(null);
   useEffect(() => {
     try {
       if (collection && !error && loading) {
-        const updateFN = (results: ReturnType<typeof query>) => {
+        const updateFN = (results: any) => {
           setResult(results);
           if (loading) {
             setLoading(false);
