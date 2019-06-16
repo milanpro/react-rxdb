@@ -1,21 +1,36 @@
 import React, { useState } from 'react';
 import { RxCollection, RxDocument, RxQuery } from 'rxdb';
 import { Subscription } from 'rxjs';
-import { useRxDB } from './RxDBContext';
+import { useCollection } from './useCollection';
+
+type OverloadRxQuery<RxDocumentType, OrmMethods> = RxQuery<
+  RxDocumentType,
+  Array<RxDocument<RxDocumentType, OrmMethods>>
+>;
 
 export interface RxQueryHookOptions<
-  Collections = { [key: string]: RxCollection },
-  RxDocumentType = any,
-  OrmMethods = {}
+  Collections = { [key: string]: RxCollection }
 > {
   collectionSelector: keyof Collections;
-  query: (
-    collection: RxCollection
-  ) => RxQuery<RxDocumentType, Array<RxDocument<RxDocumentType, OrmMethods>>>;
+  query<key extends keyof Collections>(
+    collection: Pick<Collections, key>
+  ): typeof collection extends RxCollection<infer T, infer M>
+    ? OverloadRxQuery<T, M>
+    : OverloadRxQuery<any, {}>;
 }
 
-export interface RxQueryHookResult<RxDocumentType = any, OrmMethods = {}> {
-  documents?: Array<RxDocument<RxDocumentType, OrmMethods>> | null;
+type Documents<Collections, Selector extends keyof Collections> = Pick<
+  Collections,
+  Selector
+> extends RxCollection<infer T, infer M>
+  ? Array<RxDocument<T, M>>
+  : Array<RxDocument<any, {}>>;
+
+export interface RxQueryHookResult<
+  Collections = { [key: string]: RxCollection },
+  selector extends keyof Collections = keyof Collections
+> {
+  documents?: Documents<Collections, selector> | null;
   loading: boolean;
   error?: Error;
 }
@@ -23,69 +38,44 @@ export interface RxQueryHookResult<RxDocumentType = any, OrmMethods = {}> {
 export function useRxQuery<
   Collections = {
     [key: string]: RxCollection;
-  },
-  RxDocumentType = any,
-  OrmMethods = {}
+  }
 >({
   collectionSelector,
   query,
-}: RxQueryHookOptions<
+}: RxQueryHookOptions<Collections>): RxQueryHookResult<
   Collections,
-  RxDocumentType,
-  OrmMethods
->): RxQueryHookResult<RxDocumentType, OrmMethods> {
-  const db = useRxDB<Collections>();
+  typeof collectionSelector
+> {
+  const collection = useCollection<Collections>(collectionSelector);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | undefined>();
-  const [result, setResult] = useState<Array<
-    RxDocument<RxDocumentType, OrmMethods>
+  const [result, setResult] = useState<Documents<
+    Collections,
+    typeof collectionSelector
   > | null>(null);
   React.useEffect(() => {
-    const subs: Subscription[] = [];
-    // ComponentDidMount
     try {
-      if (db && !error && loading) {
-        let collection: RxCollection<RxDocumentType, OrmMethods> = db[
-          collectionSelector
-        ] as any;
+      if (collection && !error && loading) {
         const updateFN = (
-          results: Array<RxDocument<RxDocumentType, OrmMethods>>
+          results: Documents<Collections, typeof collectionSelector>
         ) => {
           setResult(results);
           if (loading) {
             setLoading(false);
           }
         };
-        if (!collection) {
-          subs.push(
-            db.$.subscribe(event => {
-              if (event.data.op === 'RxDatabase.collection') {
-                collection = db[collectionSelector] as any;
-                if (collection) {
-                  const rxQuery = query(collection);
-                  rxQuery.exec().then(updateFN);
-                  subs.push(rxQuery.$.subscribe(updateFN));
-                }
-              }
-            })
-          );
-        } else {
-          const rxQuery = query(collection);
-          rxQuery.exec().then(updateFN);
-          subs.push(rxQuery.$.subscribe(updateFN));
-        }
+        const rxQuery = query<typeof collectionSelector>(collection);
+        (rxQuery.exec() as Promise<
+          Documents<Collections, typeof collectionSelector>
+        >)
+          .then(updateFN)
+          .catch(e => setError(e));
+        const sub = rxQuery.$.subscribe(updateFN as any);
+        return () => sub.unsubscribe();
       }
     } catch (error) {
       setError(error);
     }
-    // ComponentWillUnmount
-    return () => {
-      if (subs.length !== 0) {
-        for (const sub of subs) {
-          sub.unsubscribe();
-        }
-      }
-    };
-  }, [db]);
+  }, [collection]);
   return { documents: result, loading: loading && !error, error };
 }
