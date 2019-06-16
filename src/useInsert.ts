@@ -1,0 +1,13 @@
+import { RxCollection } from 'rxdb';
+import { useCollection } from './useCollection';
+
+type insertFnc<Collection> = (
+  json: Collection extends RxCollection<infer T, infer _M> ? T : any
+) => Promise<Collection extends RxCollection<infer T, infer _M> ? T : any>;
+
+export function useInsert<Collection extends RxCollection = RxCollection>(
+  collectionSelector: string
+): null | insertFnc<Collection> {
+  const collection = useCollection<Collection>(collectionSelector);
+  return collection ? collection.insert : null;
+}

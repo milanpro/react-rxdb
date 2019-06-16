@@ -1,3 +1,4 @@
 export * from './RxDBContext';
 export * from './useCollection';
-export * from './useRxQuery';
+export * from './useCollectionFind';
+export * from './useInsert';
