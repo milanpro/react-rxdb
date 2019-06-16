@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RxCollection, RxDocument, RxQuery } from 'rxdb';
+import { RxCollection, RxCollectionBase, RxDocument, RxQuery } from 'rxdb';
 import { useCollection } from './useCollection';
 
 type OverloadRxQuery<RxDocumentType, OrmMethods> = RxQuery<
@@ -7,23 +7,21 @@ type OverloadRxQuery<RxDocumentType, OrmMethods> = RxQuery<
   Array<RxDocument<RxDocumentType, OrmMethods>>
 >;
 
-export interface RxQueryHookOptions<
-  Collections = { [key: string]: RxCollection }
-> {
-  collectionSelector: keyof Collections;
-  query<key extends keyof Collections>(
-    collection: Pick<Collections, key>
-  ): typeof collection extends RxCollection<infer T, infer M>
-    ? OverloadRxQuery<T, M>
-    : OverloadRxQuery<any, {}>;
-}
+type queryFN<
+  Collections = { [key: string]: RxCollection },
+  key extends keyof Collections = keyof Collections
+> = (
+  collection: Collections[key]
+) => typeof collection extends RxCollectionBase<infer T, infer M>
+  ? OverloadRxQuery<T, M>
+  : OverloadRxQuery<any, {}>;
 
-type Documents<Collections, Selector extends keyof Collections> = Pick<
-  Collections,
-  Selector
-> extends RxCollection<infer T, infer M>
+type Documents<
+  Collections = { [key: string]: RxCollection },
+  Selector extends keyof Collections = keyof Collections
+> = Collections[Selector] extends RxCollectionBase<infer T, infer M>
   ? Array<RxDocument<T, M>>
-  : Array<RxDocument<any, {}>>;
+  : Array<RxDocument<any>>;
 
 export interface RxQueryHookResult<
   Collections = { [key: string]: RxCollection },
@@ -38,13 +36,10 @@ export function useRxQuery<
   Collections = {
     [key: string]: RxCollection;
   }
->({
-  collectionSelector,
-  query,
-}: RxQueryHookOptions<Collections>): RxQueryHookResult<
-  Collections,
-  typeof collectionSelector
-> {
+>(
+  collectionSelector: keyof Collections,
+  query: queryFN<Collections, typeof collectionSelector>
+): RxQueryHookResult<Collections, typeof collectionSelector> {
   const collection = useCollection<Collections>(collectionSelector);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | undefined>();
@@ -63,7 +58,7 @@ export function useRxQuery<
             setLoading(false);
           }
         };
-        const rxQuery = query<typeof collectionSelector>(collection);
+        const rxQuery = query(collection);
         (rxQuery.exec() as Promise<
           Documents<Collections, typeof collectionSelector>
         >)

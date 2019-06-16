@@ -10,20 +10,19 @@ export function useCollection<
   }
 >(
   collectionSelector: keyof Collections
-): Pick<Collections, typeof collectionSelector> | null {
+): Collections[typeof collectionSelector] | null {
   const db = useRxDB<Collections>();
-  const [collection, setCollection] = useState<Pick<
-    Collections,
-    typeof collectionSelector
-  > | null>(null);
+  const [collection, setCollection] = useState<
+    Collections[typeof collectionSelector] | null
+  >(null);
   useEffect(() => {
     if (db && !collection) {
       if (db[collectionSelector]) {
-        setCollection(db[collectionSelector] as any);
+        setCollection(db[collectionSelector]);
       } else {
         const sub = db.$.subscribe(event => {
           if (event.data.op === 'RxDatabase.collection') {
-            setCollection(db[collectionSelector] as any);
+            setCollection(db[collectionSelector]);
           }
         });
         return () => sub.unsubscribe();
