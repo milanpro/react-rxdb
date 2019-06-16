@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react';
 import { RxCollection, RxCollectionBase, RxDocument, RxQuery } from 'rxdb';
 import { useCollection } from './useCollection';
 
+type findResult<R, M> = Array<RxDocument<R, M>>;
+type findOneResult<R, M> = RxDocument<R, M> | null;
+
 type OverloadRxQuery<RxDocumentType, OrmMethods> = RxQuery<
   RxDocumentType,
-  | Array<RxDocument<RxDocumentType, OrmMethods>>
-  | RxDocument<RxDocumentType, OrmMethods>
+  | findResult<RxDocumentType, OrmMethods>
+  | findOneResult<RxDocumentType, OrmMethods>
 >;
 
 type queryFN<
