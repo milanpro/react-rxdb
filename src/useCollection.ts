@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import { RxCollection } from 'rxdb';
 import { useRxDB } from './RxDBContext';
 
-export type CollectionsResult = RxCollection;
-
 export function useCollection<
   Collections = {
     [key: string]: RxCollection;
