@@ -6,8 +6,11 @@ type insertFnc<Collection> = (
 ) => Promise<Collection extends RxCollection<infer T, infer _M> ? T : any>;
 
 export function useInsert<Collection extends RxCollection = RxCollection>(
-  collectionSelector: string
+  collectionSelector: string,
+  upsert?: boolean
 ): null | insertFnc<Collection> {
   const collection = useCollection<Collection>(collectionSelector);
-  return collection ? collection.insert : null;
+  return collection
+    ? json => (upsert ? collection.upsert(json) : collection.insert(json))
+    : null;
 }
