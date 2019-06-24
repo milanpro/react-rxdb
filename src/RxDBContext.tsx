@@ -3,9 +3,7 @@ import { RxCollection, RxDatabase } from 'rxdb';
 
 type setDbPromiseFNC<T> = (dbPromise?: Promise<RxDatabase<T>>) => void;
 
-type IRxDBContext<
-  T extends { [key: string]: RxCollection } = { [key: string]: RxCollection }
-> = {
+type IRxDBContext<T = { [key: string]: RxCollection }> = {
   db: RxDatabase<T> | null;
   setDbPromise?: setDbPromiseFNC<T>;
 };
@@ -18,7 +16,7 @@ export interface RxDBProviderProps<Collections> {
 }
 
 export function RxDBProvider<
-  Collections extends { [key: string]: RxCollection } = {
+  Collections = {
     [key: string]: RxCollection;
   }
 >({
@@ -46,7 +44,7 @@ export function RxDBProvider<
 }
 
 export function useRxDB<
-  Collections extends { [key: string]: RxCollection } = {
+  Collections = {
     [key: string]: RxCollection;
   }
 >(overrideDb?: RxDatabase<Collections>): null | RxDatabase<Collections> {
@@ -60,7 +58,7 @@ export function useRxDB<
 }
 
 export function useSetRxDB<
-  Collections extends { [key: string]: RxCollection } = {
+  Collections = {
     [key: string]: RxCollection;
   }
 >(): setDbPromiseFNC<Collections> | undefined {
