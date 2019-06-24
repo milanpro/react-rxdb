@@ -19,6 +19,8 @@ export function useCollection<Collection extends RxCollection = RxCollection>(
         });
         return () => sub.unsubscribe();
       }
+    } else if (!db && collection) {
+      setCollection(null);
     }
   }, [db]);
   return collection;

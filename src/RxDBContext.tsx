@@ -5,10 +5,13 @@ type setDbPromiseFNC<T> = (dbPromise?: Promise<RxDatabase<T>>) => void;
 
 type IRxDBContext<T = { [key: string]: RxCollection }> = {
   db: RxDatabase<T> | null;
-  setDbPromise?: setDbPromiseFNC<T>;
+  setDbPromise: setDbPromiseFNC<T>;
 };
 
-const RxDBContext = React.createContext<IRxDBContext<any>>({ db: null });
+const RxDBContext = React.createContext<IRxDBContext<any>>({
+  db: null,
+  setDbPromise: () => undefined,
+});
 
 export interface RxDBProviderProps<Collections> {
   readonly children?: ReactNode;
@@ -61,8 +64,7 @@ export function useSetRxDB<
   Collections = {
     [key: string]: RxCollection;
   }
->(): setDbPromiseFNC<Collections> | undefined {
+>(): setDbPromiseFNC<Collections> {
   const { setDbPromise } = useContext<IRxDBContext<Collections>>(RxDBContext);
-
   return setDbPromise;
 }

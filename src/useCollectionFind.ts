@@ -37,6 +37,10 @@ export function useCollectionFind<
           .catch(e => setError(e));
         const sub = rxQuery.$.subscribe(updateFN);
         return () => sub.unsubscribe();
+      } else if (!collection && !loading) {
+        setError(undefined);
+        setLoading(true);
+        setResult(null);
       }
     } catch (error) {
       setError(error);
