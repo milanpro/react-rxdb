@@ -1,7 +1,13 @@
-import React, { ReactElement, ReactNode, useContext, useState } from 'react';
+import React, {
+  ReactElement,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { RxCollection, RxDatabase } from 'rxdb';
 
-type setDbPromiseFNC<T> = (dbPromise?: Promise<RxDatabase<T>>) => void;
+type setDbPromiseFNC<T> = (dbPromise: Promise<RxDatabase<T>> | null) => void;
 
 type IRxDBContext<T = { [key: string]: RxCollection }> = {
   db: RxDatabase<T> | null;
@@ -24,15 +30,24 @@ export function RxDBProvider<
   }
 >({
   children,
+  dbPromise,
 }: {
   children?: ReactNode;
+  dbPromise?: Promise<RxDatabase<Collections>>;
 }): ReactElement<RxDBProviderProps<Collections>> {
   const [db, setDb] = useState<RxDatabase<Collections> | null>(null);
-  const setDbPromise: setDbPromiseFNC<Collections> = (
-    dbPromise?: Promise<RxDatabase<Collections>>
-  ) => {
+
+  useEffect(() => {
     if (dbPromise) {
-      dbPromise.then(resolvedDb => {
+      dbPromise.then(resDb => setDb(resDb));
+    }
+  }, [dbPromise]);
+
+  const setDbPromise: setDbPromiseFNC<Collections> = (
+    newDbPromise: Promise<RxDatabase<Collections>> | null
+  ) => {
+    if (newDbPromise) {
+      newDbPromise.then(resolvedDb => {
         setDb(resolvedDb);
       });
     } else {
