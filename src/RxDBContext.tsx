@@ -16,7 +16,7 @@ export interface RxDBProviderProps<Collections> {
 
 export interface RxDBProviderWithPromiseProps<Collections> {
   readonly children?: ReactNode;
-  readonly dbPromise: Promise<RxDatabase<Collections>>;
+  readonly dbPromise?: Promise<RxDatabase<Collections>>;
 }
 
 export function RxDBProvider<Collections = { [key: string]: RxCollection }>({
@@ -27,8 +27,12 @@ export function RxDBProvider<Collections = { [key: string]: RxCollection }>({
 > {
   const [db, setDb] = useState<RxDatabase<Collections> | null>(null);
   useEffect(() => {
-    dbPromise.then(resolvedDb => setDb(resolvedDb));
-  }, []);
+    if (dbPromise) {
+      dbPromise.then(resolvedDb => setDb(resolvedDb));
+    } else {
+      setDb(null);
+    }
+  }, [dbPromise]);
   return <RxDBContext.Provider value={db}>{children}</RxDBContext.Provider>;
 }
 
