@@ -15,7 +15,8 @@
     "build:cjs": "rimraf lib && babel src --extensions '.ts' --extensions '.tsx' --ignore '**/__tests__' --ignore '**/__testutils__' -d lib",
     "build:es": "rimraf es && cross-env ES_MODULES=true babel src --extensions '.ts' --extensions '.tsx' --ignore '**/__tests__' --ignore '**/__testutils__' -d es",
     "build:typings": "tsc -p tsconfig.typings.json",
-    "build": "npm run build:cjs && npm run build:es && npm run build:typings"
+    "build": "npm run build:cjs && npm run build:es && npm run build:typings",
+    "test": "echo 'No tests found \n && exit 0'"
   },
   "husky": {
     "hooks": {
